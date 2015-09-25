@@ -28,8 +28,12 @@ class ControllerListener
 
     public function onKernelController(FilterControllerEvent $event)
     {
-        $route = $this->router->match($event->getRequest()->getPathInfo());
-        if (strpos($route['_controller'], 'BackendBundle') !== false) {
+        try {
+            $route = $this->router->match($event->getRequest()->getPathInfo());
+        } catch (\Exception $e) {
+            //Suppress 404s
+        }
+        if (isset($route['_controller']) && strpos($route['_controller'], 'BackendBundle') !== false) {
             if (!$this->securityContext->isGranted('ROLE_ADMIN')) {
                 throw new AccessDeniedException(
                     'Current user is not granted required role "' . $role . '".'
